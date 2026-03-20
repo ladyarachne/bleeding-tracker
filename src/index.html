@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bleeding Pattern Tracker</title>
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <h1>📊 Bleeding Pattern Tracker</h1>
+      <p class="subtitle">Monitor irregular bleeding patterns (Nexplanon & more)</p>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="log">Daily Log</button>
+      <button class="tab" data-tab="calendar">Calendar</button>
+      <button class="tab" data-tab="stats">Statistics</button>
+    </nav>
+
+    <section id="log-tab" class="tab-content active">
+      <div class="log-container">
+        <div class="date-selector">
+          <label for="log-date">Date:</label>
+          <input type="date" id="log-date">
+        </div>
+
+        <div class="section ring-section">
+          <p class="section-title">💍 Ring Status</p>
+          <div id="ring-status" class="ring-status">
+            <p class="no-data">Loading ring status...</p>
+          </div>
+          <div class="ring-actions">
+            <button class="btn btn-ring-insert" onclick="recordRingEvent('insert')">+ Insert Ring</button>
+            <button class="btn btn-ring-remove" onclick="recordRingEvent('remove')">- Remove Ring</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <p class="section-title">Bleeding Intensity</p>
+          <div class="bleeding-scale">
+            <div class="scale-item">
+              <button class="bleed-btn" data-level="0" onclick="setBleeding(0)">0</button>
+              <span class="scale-label">None</span>
+            </div>
+            <div class="scale-item">
+              <button class="bleed-btn" data-level="1" onclick="setBleeding(1)">1</button>
+              <span class="scale-label">Spotting</span>
+            </div>
+            <div class="scale-item">
+              <button class="bleed-btn" data-level="2" onclick="setBleeding(2)">2</button>
+              <span class="scale-label">Light</span>
+            </div>
+            <div class="scale-item">
+              <button class="bleed-btn" data-level="3" onclick="setBleeding(3)">3</button>
+              <span class="scale-label">Moderate</span>
+            </div>
+            <div class="scale-item">
+              <button class="bleed-btn" data-level="4" onclick="setBleeding(4)">4</button>
+              <span class="scale-label">Heavy</span>
+            </div>
+          </div>
+          <div class="intensity-bar">
+            <div id="intensity-fill" class="intensity-fill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <p class="section-title">Notes</p>
+          <textarea id="notes" placeholder="Add notes about symptoms, triggers, or observations..."></textarea>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-primary" onclick="saveEntry()">Save Entry</button>
+          <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+        </div>
+
+        <div class="recent-entries">
+          <h3>Recent Entries</h3>
+          <div id="entries-list" class="entries-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="calendar-tab" class="tab-content">
+      <div class="calendar-container">
+        <div class="calendar-header">
+          <button class="btn btn-icon" onclick="changeMonth(-1)">◀</button>
+          <h2 id="calendar-month-year"></h2>
+          <button class="btn btn-icon" onclick="changeMonth(1)">▶</button>
+        </div>
+        <div class="calendar-legend">
+          <span class="legend-item"><span class="legend-dot level-0"></span> None</span>
+          <span class="legend-item"><span class="legend-dot level-1"></span> Spot</span>
+          <span class="legend-item"><span class="legend-dot level-2"></span> Light</span>
+          <span class="legend-item"><span class="legend-dot level-3"></span> Mod</span>
+          <span class="legend-item"><span class="legend-dot level-4"></span> Heavy</span>
+          <span class="legend-item"><span class="legend-dot ring-insert"></span> In</span>
+          <span class="legend-item"><span class="legend-dot ring-remove"></span> Out</span>
+        </div>
+        <div class="calendar-grid">
+          <div class="calendar-day-header">Sun</div>
+          <div class="calendar-day-header">Mon</div>
+          <div class="calendar-day-header">Tue</div>
+          <div class="calendar-day-header">Wed</div>
+          <div class="calendar-day-header">Thu</div>
+          <div class="calendar-day-header">Fri</div>
+          <div class="calendar-day-header">Sat</div>
+          <div id="calendar-days" class="calendar-days"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="stats-tab" class="tab-content">
+      <div class="stats-container">
+        <h2>Pattern Analysis</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value" id="stat-total-days">-</div>
+            <div class="stat-label">Total Days</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🩸</div>
+            <div class="stat-value" id="stat-bleeding-days">-</div>
+            <div class="stat-label">Bleeding Days</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-value" id="stat-avg-intensity">-</div>
+            <div class="stat-label">Avg Intensity</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value" id="stat-longest-streak">-</div>
+            <div class="stat-label">Longest Streak</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💍</div>
+            <div class="stat-value" id="stat-ring-day">-</div>
+            <div class="stat-label">Ring Day</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⏰</div>
+            <div class="stat-value" id="stat-days-until">-</div>
+            <div class="stat-label">Until Removal</div>
+          </div>
+        </div>
+        <div class="ring-history">
+          <h3>💍 Ring History</h3>
+          <div id="ring-history-list" class="ring-history-list"></div>
+        </div>
+        <div class="pattern-alerts">
+          <h3>⚠️ Pattern Alerts</h3>
+          <div id="pattern-list" class="pattern-list"></div>
+        </div>
+        <div class="insights-section">
+          <h3>💡 Insights</h3>
+          <div id="insights-list" class="insights-list"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    var currentBleeding = 0;
+    var currentMonth = new Date();
+    var entriesData = {};
+    var ringEventsData = {};
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      var today = new Date().toISOString().split('T')[0];
+      document.getElementById('log-date').value = today;
+      setupTabs();
+      await loadAllData();
+      await loadEntries();
+      await loadRingStatus();
+      await loadStatistics();
+      await loadRingHistory();
+      setupCalendarClick();
+      document.getElementById('log-date').addEventListener('change', loadRingStatus);
+    });
+
+    function setupTabs() {
+      var tabs = document.querySelectorAll('.tab');
+      var contents = document.querySelectorAll('.tab-content');
+      tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          var targetId = tab.dataset.tab;
+          tabs.forEach(function(t) { t.classList.remove('active'); });
+          contents.forEach(function(c) { c.classList.remove('active'); });
+          tab.classList.add('active');
+          document.getElementById(targetId + '-tab').classList.add('active');
+          if (targetId === 'calendar') renderCalendar();
+          else if (targetId === 'stats') { loadStatistics(); loadRingHistory(); }
+        });
+      });
+    }
+
+    async function loadAllData() {
+      var entries = await window.api.getEntries();
+      entriesData = {};
+      entries.forEach(function(entry) { entriesData[entry.date] = entry; });
+      
+      var ringEvents = await window.api.getRingEvents();
+      ringEventsData = {};
+      ringEvents.forEach(function(event) { ringEventsData[event.date] = event; });
+    }
+
+    async function loadEntries() {
+      var entries = await window.api.getEntries();
+      var container = document.getElementById('entries-list');
+      container.innerHTML = '';
+      var recentEntries = entries.slice(0, 10);
+      
+      if (recentEntries.length === 0) {
+        container.innerHTML = '<p class="no-data">No entries yet. Start tracking today!</p>';
+        return;
+      }
+
+      recentEntries.forEach(function(entry) {
+        var div = document.createElement('div');
+        div.className = 'entry-card';
+        var ringIndicator = ringEventsData[entry.date] ? ' <span class="ring-badge">' + (ringEventsData[entry.date].event_type === 'insert' ? '🔘' : '⚪') + '</span>' : '';
+        div.innerHTML = '<div class="entry-date">' + formatDate(entry.date) + ringIndicator + '</div>' +
+          '<div class="entry-level"><span class="bleed-indicator level-' + entry.bleeding + '"></span> ' + getBleedingLabel(entry.bleeding) + '</div>' +
+          (entry.notes ? '<div class="entry-notes">' + escapeHtml(entry.notes) + '</div>' : '');
+        container.appendChild(div);
+      });
+    }
+
+    async function loadRingStatus() {
+      var date = document.getElementById('log-date').value;
+      var ringEvent = ringEventsData[date];
+      var container = document.getElementById('ring-status');
+      
+      if (ringEvent) {
+        if (ringEvent.event_type === 'insert') {
+          var daysSince = Math.floor((new Date() - new Date(ringEvent.date)) / (1000 * 60 * 60 * 24));
+          var daysUntil = Math.max(0, 21 - daysSince);
+          container.innerHTML = '<div class="ring-in-status"><span class="ring-icon">💍</span> Ring inserted ' + formatDate(ringEvent.date) + '<br><span class="ring-days">Day ' + daysSince + ' • ' + daysUntil + ' days until removal</span></div>';
+        } else {
+          container.innerHTML = '<div class="ring-out-status"><span class="ring-icon">⚪</span> Ring removed ' + formatDate(ringEvent.date) + '</div>';
+        }
+      } else {
+        var stats = await window.api.getStatistics();
+        if (stats && stats.currentRingDay) {
+          container.innerHTML = '<div class="ring-in-status"><span class="ring-icon">💍</span> Current ring: Day ' + stats.currentRingDay.daysSinceInsert + '<br><span class="ring-days">' + stats.currentRingDay.daysUntilRemoval + ' days until removal</span></div>';
+        } else {
+          container.innerHTML = '<p class="no-data">No ring recorded for this date</p>';
+        }
+      }
+    }
+
+    async function recordRingEvent(type) {
+      var date = document.getElementById('log-date').value;
+      if (!date) { alert('Please select a date'); return; }
+      
+      var event = { date: date, event_type: type, notes: '' };
+      var result = await window.api.saveRingEvent(event);
+      
+      if (result.success) {
+        await loadAllData();
+        await loadRingStatus();
+        await loadRingHistory();
+        
+        var btnClass = type === 'insert' ? '.btn-ring-insert' : '.btn-ring-remove';
+        var btn = document.querySelector(btnClass);
+        var originalText = btn.textContent;
+        btn.textContent = '✓ ' + (type === 'insert' ? 'Inserted!' : 'Removed!');
+        setTimeout(function() { btn.textContent = originalText; }, 1500);
+      }
+    }
+
+    async function loadRingHistory() {
+      var ringEvents = await window.api.getRingEvents();
+      var container = document.getElementById('ring-history-list');
+      
+      if (ringEvents.length === 0) {
+        container.innerHTML = '<p class="no-data">No ring events recorded yet</p>';
+        return;
+      }
+      
+      var events = ringEvents.slice(0, 10);
+      var html = '';
+      events.forEach(function(event) {
+        var icon = event.event_type === 'insert' ? '💍' : '⚪';
+        var label = event.event_type === 'insert' ? 'Inserted' : 'Removed';
+        html += '<div class="ring-history-item"><span class="ring-history-icon">' + icon + '</span><span class="ring-history-date">' + formatDate(event.date) + '</span><span class="ring-history-type">' + label + '</span></div>';
+      });
+      container.innerHTML = html;
+    }
+
+    function setBleeding(level) {
+      currentBleeding = level;
+      document.querySelectorAll('.bleed-btn').forEach(function(btn) { btn.classList.remove('active'); });
+      document.querySelector('.bleed-btn[data-level="' + level + '"]').classList.add('active');
+      document.getElementById('intensity-fill').style.width = ((level / 4) * 100) + '%';
+    }
+
+    async function saveEntry() {
+      var date = document.getElementById('log-date').value;
+      var notes = document.getElementById('notes').value;
+      if (!date) { alert('Please select a date'); return; }
+
+      var entry = { date: date, bleeding: currentBleeding, notes: notes };
+      var result = await window.api.saveEntry(entry);
+
+      if (result.success) {
+        await loadAllData();
+        await loadEntries();
+        var btn = document.querySelector('.btn-primary');
+        var originalText = btn.textContent;
+        btn.textContent = '✓ Saved!';
+        btn.classList.add('success');
+        setTimeout(function() { btn.textContent = originalText; btn.classList.remove('success'); }, 1500);
+      }
+    }
+
+    function clearForm() {
+      currentBleeding = 0;
+      document.getElementById('notes').value = '';
+      document.querySelectorAll('.bleed-btn').forEach(function(btn) { btn.classList.remove('active'); });
+      document.getElementById('intensity-fill').style.width = '0%';
+    }
+
+    async function renderCalendar() {
+      await loadAllData();
+      var year = currentMonth.getFullYear();
+      var month = currentMonth.getMonth();
+      document.getElementById('calendar-month-year').textContent = new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+      var firstDay = new Date(year, month, 1);
+      var lastDay = new Date(year, month + 1, 0);
+      var startDay = firstDay.getDay();
+      var totalDays = lastDay.getDate();
+      var container = document.getElementById('calendar-days');
+      container.innerHTML = '';
+
+      for (var i = 0; i < startDay; i++) {
+        var empty = document.createElement('div');
+        empty.className = 'calendar-day empty';
+        container.appendChild(empty);
+      }
+
+      var today = new Date().toISOString().split('T')[0];
+      for (var day = 1; day <= totalDays; day++) {
+        var dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+        var entry = entriesData[dateStr];
+        var ringEvent = ringEventsData[dateStr];
+        var level = entry ? entry.bleeding : 0;
+        var dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day' + (dateStr === today ? ' today' : '');
+        dayEl.dataset.date = dateStr;
+        
+        var indicator = '';
+        if (ringEvent) {
+          indicator = '<span class="day-ring ' + ringEvent.event_type + '"></span>';
+        } else if (level > 0) {
+          indicator = '<span class="day-indicator level-' + level + '"></span>';
+        }
+        
+        dayEl.innerHTML = '<span class="day-number">' + day + '</span>' + indicator;
+        container.appendChild(dayEl);
+      }
+    }
+
+    function changeMonth(delta) {
+      currentMonth.setMonth(currentMonth.getMonth() + delta);
+      renderCalendar();
+    }
+
+    function setupCalendarClick() {
+      document.getElementById('calendar-days').addEventListener('click', function(e) {
+        var dayEl = e.target.closest('.calendar-day');
+        if (dayEl && !dayEl.classList.contains('empty')) {
+          var date = dayEl.dataset.date;
+          document.getElementById('log-date').value = date;
+          var entry = entriesData[date];
+          if (entry) {
+            setBleeding(entry.bleeding);
+            document.getElementById('notes').value = entry.notes || '';
+          } else {
+            clearForm();
+          }
+          loadRingStatus();
+          document.querySelector('[data-tab="log"]').click();
+        }
+      });
+    }
+
+    async function loadStatistics() {
+      var stats = await window.api.getStatistics();
+      
+      if (!stats) {
+        document.getElementById('stat-total-days').textContent = '-';
+        document.getElementById('stat-bleeding-days').textContent = '-';
+        document.getElementById('stat-avg-intensity').textContent = '-';
+        document.getElementById('stat-longest-streak').textContent = '-';
+        document.getElementById('stat-ring-day').textContent = '-';
+        document.getElementById('stat-days-until').textContent = '-';
+        return;
+      }
+
+      document.getElementById('stat-total-days').textContent = stats.totalEntries || 0;
+      document.getElementById('stat-bleeding-days').textContent = stats.totalBleedingDays || 0;
+      document.getElementById('stat-avg-intensity').textContent = stats.averageIntensity || 0;
+      document.getElementById('stat-longest-streak').textContent = stats.longestBleedingStreak ? stats.longestBleedingStreak + 'd' : '-';
+      document.getElementById('stat-ring-day').textContent = stats.currentRingDay ? 'Day ' + stats.currentRingDay.daysSinceInsert : '-';
+      document.getElementById('stat-days-until').textContent = stats.currentRingDay ? stats.currentRingDay.daysUntilRemoval + 'd' : '-';
+
+      generatePatterns(stats);
+    }
+
+    function generatePatterns(stats) {
+      var patterns = [];
+      var insights = [];
+
+      if (stats.totalEntries === 0) {
+        document.getElementById('pattern-list').innerHTML = '<p class="no-data">Start tracking to see patterns</p>';
+        document.getElementById('insights-list').innerHTML = '<p class="no-data">No data yet</p>';
+        return;
+      }
+
+      if (stats.longestBleedingStreak > 7) {
+        patterns.push({ icon: '⚠️', text: 'Extended bleeding: ' + stats.longestBleedingStreak + ' day streak', severity: 'warning' });
+      }
+
+      if (stats.shortestCycle && stats.longestCycle) {
+        var cycleVariance = stats.longestCycle - stats.shortestCycle;
+        if (cycleVariance > 10) {
+          patterns.push({ icon: '🔄', text: 'Irregular cycles: ' + stats.shortestCycle + '-' + stats.longestCycle + ' days', severity: 'info' });
+        }
+      }
+
+      if (stats.longestCycle > 35) {
+        patterns.push({ icon: '📅', text: 'Unusually long cycle: ' + stats.longestCycle + ' days', severity: 'info' });
+      }
+
+      var bleedingPercent = stats.totalEntries > 0 ? ((stats.totalBleedingDays / stats.totalEntries) * 100).toFixed(0) : 0;
+      if (bleedingPercent > 50) {
+        insights.push({ icon: '📊', text: 'Bleeding ' + bleedingPercent + '% of tracked days' });
+      }
+
+      if (stats.averageCycleLength) {
+        insights.push({ icon: '📈', text: 'Avg cycle: ' + stats.averageCycleLength + ' days' });
+      }
+
+      var patternList = document.getElementById('pattern-list');
+      if (patterns.length === 0) {
+        patternList.innerHTML = '<p class="success-text">✓ No concerning patterns detected</p>';
+      } else {
+        var pHtml = '';
+        patterns.forEach(function(p) {
+          pHtml += '<div class="pattern-item ' + p.severity + '"><span>' + p.icon + '</span> ' + p.text + '</div>';
+        });
+        patternList.innerHTML = pHtml;
+      }
+
+      var insightsList = document.getElementById('insights-list');
+      if (insights.length === 0) {
+        insightsList.innerHTML = '<p class="no-data">Keep tracking for more insights</p>';
+      } else {
+        var iHtml = '';
+        insights.forEach(function(i) {
+          iHtml += '<div class="insight-item"><span>' + i.icon + '</span> ' + i.text + '</div>';
+        });
+        insightsList.innerHTML = iHtml;
+      }
+    }
+
+    function formatDate(dateStr) {
+      var date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+
+    function getBleedingLabel(level) {
+      var labels = ['None', 'Spotting', 'Light', 'Moderate', 'Heavy'];
+      return labels[level] || 'Unknown';
+    }
+
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

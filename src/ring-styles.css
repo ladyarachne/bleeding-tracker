@@ -1,0 +1,141 @@
+/* Ring Section */
+.ring-section {
+  background: rgba(78, 205, 196, 0.05);
+  border: 1px solid rgba(78, 205, 196, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.ring-status {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.ring-in-status {
+  color: #4ecdc4;
+  font-size: 14px;
+  text-align: center;
+}
+
+.ring-out-status {
+  color: #888;
+  font-size: 14px;
+  text-align: center;
+}
+
+.ring-icon {
+  font-size: 24px;
+  margin-right: 8px;
+}
+
+.ring-days {
+  color: #888;
+  font-size: 12px;
+}
+
+.ring-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-ring-insert {
+  flex: 1;
+  background: rgba(78, 205, 196, 0.2);
+  color: #4ecdc4;
+  border: 1px solid rgba(78, 205, 196, 0.4);
+}
+
+.btn-ring-insert:hover {
+  background: rgba(78, 205, 196, 0.3);
+}
+
+.btn-ring-remove {
+  flex: 1;
+  background: rgba(255, 159, 67, 0.2);
+  color: #ff9f43;
+  border: 1px solid rgba(255, 159, 67, 0.4);
+}
+
+.btn-ring-remove:hover {
+  background: rgba(255, 159, 67, 0.3);
+}
+
+.ring-history {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+}
+
+.ring-history h3 {
+  color: #888;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.ring-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ring-history-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+}
+
+.ring-history-icon {
+  font-size: 18px;
+}
+
+.ring-history-date {
+  flex: 1;
+  color: #e0e0e0;
+  font-size: 14px;
+}
+
+.ring-history-type {
+  color: #888;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.ring-badge {
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.day-ring {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 4px;
+}
+
+.day-ring.insert {
+  background: #4ecdc4;
+  box-shadow: 0 0 8px rgba(78, 205, 196, 0.6);
+}
+
+.day-ring.remove {
+  background: #ff9f43;
+  box-shadow: 0 0 8px rgba(255, 159, 67, 0.6);
+}
+
+.legend-dot.ring-insert {
+  background: #4ecdc4;
+}
+
+.legend-dot.ring-remove {
+  background: #ff9f43;
+}
